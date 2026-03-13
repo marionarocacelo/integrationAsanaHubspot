@@ -27,7 +27,9 @@ module.exports = async function (req, res, next) {
         outputObject.project_gid = projectGid;
 
         let projectData = await getAsanaProject(projectGid);
+        console.log("projectData after ", projectData);
         let hsDealId = getHubspotDealId(projectData);
+        console.log("hsDealId after ", hsDealId);
 
         let fieldsChanged = getAsanaChangedValues(projectData, changesUniqueFieldsGid);
         let asanaProjectStatus = await getAsanaProjectStatus(projectGid);
@@ -131,7 +133,8 @@ async function getAsanaProject(projectGid) {
             "Content-Type": "application/json"
         }
     });
-
+    console.log("asanaProjectResp ", asanaProjectResp);
+    writeLogEntry("asanaProjectResp ", asanaProjectResp);
     if(asanaProjectResp.statusText == "Not Found") {
         throw new Error("Asana project not found");
     }
@@ -140,7 +143,9 @@ async function getAsanaProject(projectGid) {
 }
 
 function getHubspotDealId(projectData) {
+    console.log("projectData ", projectData);
     let hsDealId = projectData.data.custom_fields.find(field => field.gid == '1213203026130633');
+    console.log("hsDealId ", hsDealId);
     if (!hsDealId) {
         throw new Error("HS deal id not found");
     } else {

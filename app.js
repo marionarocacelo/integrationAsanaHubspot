@@ -5,6 +5,7 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var asanaRouter = require('./routes/asana');
+var logsRouter = require('./routes/logs');
 
 var app = express();
 
@@ -16,5 +17,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/fromAsana', asanaRouter);
+app.use('/logs', logsRouter);
 
 module.exports = app;
