@@ -9,7 +9,7 @@ router.get('/', function(req, res, next) {
 
 router.get('/asana-test', async (req, res, next) => {
   console.log('ASANA_PAT present?', !!process.env.ASANA_PAT);
-  return res.status(200).json({ "message": "hi!", "token": process.env.ASANA_TOKEN });
+  return res.status(200).json({ "message": "hi!", "token": process.env.ASANA_TOKEN , "token_HS": process.env.HUBSPOT_TOKEN, "EMAIL_TO": process.env.EMAIL_TO });
   try {
     const response = await fetch('https://app.asana.com/api/1.0/users/me', {
       method: 'GET',
