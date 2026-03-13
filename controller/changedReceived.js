@@ -28,10 +28,12 @@ module.exports = async function (req, res, next) {
 
         let projectData = await getAsanaProject(projectGid);
         console.log("projectData after ", projectData);
+        writeLogEntry("projectData after ", projectData);
         let hsDealId = getHubspotDealId(projectData);
         console.log("hsDealId after ", hsDealId);
-
+        writeLogEntry("hsDealId after "+hsDealId);
         let fieldsChanged = getAsanaChangedValues(projectData, changesUniqueFieldsGid);
+        writeLogEntry("fieldsChanged after "+JSON.stringify(fieldsChanged));
         let asanaProjectStatus = await getAsanaProjectStatus(projectGid);
         let hubspotProjectStatus = await getHubspotProjectStatus(hsDealId);
 
