@@ -24,6 +24,10 @@ module.exports = async function (req, res, next) {
         let { changes, changesUniqueFieldsGid, projectGid } = extractData(dealData);
         if(changes.length == 0) throw new Error("no changes detected");
 
+        writeLogEntry("changes after "+JSON.stringify(changes));
+        writeLogEntry("changesUniqueFieldsGid after "+JSON.stringify(changesUniqueFieldsGid));
+        writeLogEntry("projectGid after "+projectGid);
+
         outputObject.project_gid = projectGid;
 
         let projectData = await getAsanaProject(projectGid);
