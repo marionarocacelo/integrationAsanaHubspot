@@ -144,8 +144,10 @@ async function getAsanaProject(projectGid) {
 
 function getHubspotDealId(projectData) {
     console.log("projectData ", projectData);
+    writeLogEntry("projectData ", projectData);
     let hsDealId = projectData.data.custom_fields.find(field => field.gid == '1213203026130633');
     console.log("hsDealId ", hsDealId);
+    writeLogEntry("hsDealId "+hsDealId)
     if (!hsDealId) {
         throw new Error("HS deal id not found");
     } else {
