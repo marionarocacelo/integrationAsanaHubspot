@@ -9,7 +9,7 @@ module.exports = async function (req, res, next) {
     try {
         writeLogEntry("--------------------------------");
         writeLogEntry("input object: ",req.body);
-        return res.status(200).json(req.body);
+        return res.status(200).json({body: req.body});
 
         let outputObject = {
             project_gid: undefined,
