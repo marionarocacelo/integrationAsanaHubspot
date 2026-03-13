@@ -36,6 +36,8 @@ module.exports = async function (req, res, next) {
         let hsDealId = getHubspotDealId(projectData);
         console.log("hsDealId after ", hsDealId);
         writeLogEntry("hsDealId after "+hsDealId);
+        console.log("projectData after ", projectData);
+        console.log("changesUniqueFieldsGid ", changesUniqueFieldsGid);
         let fieldsChanged = getAsanaChangedValues(projectData, changesUniqueFieldsGid);
         writeLogEntry("fieldsChanged after "+JSON.stringify(fieldsChanged));
         let asanaProjectStatus = await getAsanaProjectStatus(projectGid);
@@ -140,6 +142,12 @@ async function getAsanaProject(projectGid) {
         }
     });
     console.log("asanaProjectResp ", asanaProjectResp);
+    writeLogEntry("url ", `https://app.asana.com/api/1.0/projects/${projectGid}`);
+    writeLogEntry("headers ", {
+        Authorization: `Bearer ${ASANA_TOKEN}`,
+        Accept: "application/json",
+        "Content-Type": "application/json"
+    });
     writeLogEntry("asanaProjectResp ", asanaProjectResp);
     if(asanaProjectResp.statusText == "Not Found") {
         throw new Error("Asana project not found");
@@ -229,7 +237,7 @@ function getAsanaChangedValues(asanaProjectData, changesUniqueFieldsGid) {
         fieldsChanged.push({
             value: getAsanaProjectName(asanaProjectData),
             field_gid: "name",
-            field_hubspot_name: mapFieldToHubspot["name"],
+            field_hubspot_name: mapFieldToHubspot("name"),
         });
     }
     if(fieldsChanged.length == 0) {
