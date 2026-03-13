@@ -1,4 +1,4 @@
-const { writeLogEntry, writeLogEntryError } = require("../utilities/logs");
+const { writeLogEntry, writeLogEntryError, formatErrorWithLocation } = require("../utilities/logs");
 
 const ASANA_TOKEN = process.env.ASANA_TOKEN;
 const HUBSPOT_TOKEN = process.env.HUBSPOT_TOKEN;
@@ -51,14 +51,14 @@ module.exports = async function (req, res, next) {
 
     } catch (error) {
         console.error(error);
-        writeLogEntryError(`changedReceived.js error: ${error.message}`, error);
-        writeLogEntry(`ERROR! changedReceived.js error: ${error.message}`, error);
+        writeLogEntryError(`changedReceived.js error: ${formatErrorWithLocation(error)}`, error, { reqBody: req.body });
+        writeLogEntry(`ERROR! changedReceived.js error: ${formatErrorWithLocation(error)}`, error);
 
-        return res.status(500).json({ message: `Internal server error: ${JSON.stringify({
+        return res.status(500).json({
+            message: `Internal server error: ${formatErrorWithLocation(error)}`,
             name: error.name,
-            message: error.message,
             stack: error.stack
-        })}` });
+        });
     }
 }
 

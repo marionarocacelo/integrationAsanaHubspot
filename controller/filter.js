@@ -1,4 +1,4 @@
-const { writeLogEntryError, writeLogEntry } = require("../utilities/logs");
+const { writeLogEntryError, writeLogEntry, formatErrorWithLocation } = require("../utilities/logs");
 
 const ASANA_TOKEN = process.env.ASANA_TOKEN;
 const HUBSPOT_TOKEN = process.env.HUBSPOT_TOKEN;
@@ -19,12 +19,12 @@ module.exports = function (req, res, next) {
         }
 
     } catch (error) {
-        writeLogEntryError(`${res.locals.outputObject.project_gid} filter.js error: ${error}`);
-        writeLogEntry(`ERROR! ${res.locals.outputObject.project_gid} filter.js error: ${error}`);
-        return res.status(500).json({ message: `Internal server error: ${JSON.stringify({
+        writeLogEntryError(`${res.locals.outputObject.project_gid} filter.js error: ${formatErrorWithLocation(error)}`, error, { reqBody: req.body });
+        writeLogEntry(`ERROR! ${res.locals.outputObject.project_gid} filter.js error: ${formatErrorWithLocation(error)}`, error);
+        return res.status(500).json({
+            message: `Internal server error: ${formatErrorWithLocation(error)}`,
             name: error.name,
-            message: error.message,
             stack: error.stack
-        })}` });
+        });
     }
 }

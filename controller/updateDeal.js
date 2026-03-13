@@ -1,4 +1,4 @@
-const { writeLogEntry, writeLogEntryError } = require("../utilities/logs");
+const { writeLogEntry, writeLogEntryError, formatErrorWithLocation } = require("../utilities/logs");
 
 const ASANA_TOKEN = process.env.ASANA_TOKEN;
 const HUBSPOT_TOKEN = process.env.HUBSPOT_TOKEN;
@@ -25,25 +25,31 @@ module.exports = async function (req, res) {
             body: JSON.stringify(res.locals.outputObject.changesToHubspot)
         });
 
+        console.log("response before ", response);
+        console.log("response status ", response.status);
+
+        if(response.status != 200) {
+            console.log("response status not 200 ", response);
+            throw new Error(JSON.stringify(response));
+        }
+
         response = await response.json();
 
         writeLogEntry(`${res.locals.outputObject.project_gid} updateDeal.js url: (${url})`);
         writeLogEntry(`${res.locals.outputObject.project_gid} updateDeal.js body: (${res.locals.outputObject.changesToHubspot})`);
         writeLogEntry(`${res.locals.outputObject.project_gid} updateDeal.js response: ${JSON.stringify(response)}`);
 
-        if(response.status != 200) {
-            throw new Error(JSON.stringify(response));
-        }
+        console.log("response after ", response);
 
         return res.status(200).json(res.locals.outputObject);
 
     } catch (error) {
-        writeLogEntryError(`${res.locals.outputObject.project_gid} updateDeal.js error: ${error}`);
-        writeLogEntry(`ERROR! ${res.locals.outputObject.project_gid} updateDeal.js error: ${error}`);
-        return res.status(500).json({ message: `Internal server error: ${JSON.stringify({
+        writeLogEntryError(`${res.locals.outputObject.project_gid} updateDeal.js error: ${formatErrorWithLocation(error)}`, error, { reqBody: req.body });
+        writeLogEntry(`ERROR! ${res.locals.outputObject.project_gid} updateDeal.js error: ${formatErrorWithLocation(error)}`, error);
+        return res.status(500).json({
+            message: `Internal server error: ${formatErrorWithLocation(error)}`,
             name: error.name,
-            message: error.message,
             stack: error.stack
-        })}` });
+        });
     }
 }
