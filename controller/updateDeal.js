@@ -28,6 +28,8 @@ module.exports = async function (req, res) {
         console.log("response before ", response);
         console.log("response status ", response.status);
 
+        writeLogEntry("updateDeal.js response: " + JSON.stringify(response));
+
         if(response.status != 200) {
             console.log("response status not 200 ", response);
             throw new Error(JSON.stringify(response));
