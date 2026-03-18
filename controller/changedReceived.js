@@ -285,6 +285,7 @@ async function getHubspotProjectStatus(hsDealId) {
             'Content-Type': 'application/json'
         }
     })
+    
 
     if (responseHubspot.statusText == "Not Found") {
         throw new Error("Hubspot deal not found");
