@@ -10,6 +10,9 @@ module.exports = async function (req, res, next) {
         writeLogEntry("--------------------------------");
         writeLogEntry("input object: ",req.body);
 
+        console.log("--------------------------------");
+        console.log("input object: ",req.body);
+
         let outputObject = {
             project_gid: undefined,
             team_gid: undefined,
@@ -31,9 +34,11 @@ module.exports = async function (req, res, next) {
         outputObject.project_gid = projectGid;
 
         let projectData = await getAsanaProject(projectGid);
-        console.log("projectData after ", projectData);
+
+        console.log("projectData after ", JSON.stringify(projectData));
         writeLogEntry("projectData after ", projectData);
         let hsDealId = getHubspotDealId(projectData);
+        
         console.log("hsDealId after ", hsDealId);
         writeLogEntry("hsDealId after "+hsDealId);
         console.log("projectData after ", projectData);
@@ -44,16 +49,14 @@ module.exports = async function (req, res, next) {
         let hubspotProjectStatus = await getHubspotProjectStatus(hsDealId);
 
         let objectHSFields = getHSFieldsObject(asanaProjectStatus, hubspotProjectStatus, fieldsChanged);
-
         //PREPARE OUTPUT OBJECT:
         outputObject.team_gid = projectData.data.team.gid;
         outputObject.numChanges = Object.keys(objectHSFields).length;
         outputObject.hsDealId = hsDealId;
         //mapping the rest of the modified fields to the output object:
         Object.keys(objectHSFields).forEach(key => outputObject.changesToHubspot.properties[key] = objectHSFields[key]);
-
         res.locals.outputObject = outputObject;
-        // res.status(200).json(outputObject);
+        //return res.status(200).json({"message": "tot bé"});
 
         writeLogEntry("changedReceived.js output object: ", outputObject);
 
