@@ -209,7 +209,7 @@ function mapFieldToHubspot(asanaField) {
         "1210067042557817": "facades_has_calculadora_quotation", //web calculadora
         "1208687394444478": "facades_project_phase", //Fase Proyecto (fase inicial)
         //"1213360859742931": "dealstage", --> només de hs a asana
-        "1209494526985078": "facades_prob_estimated_value",
+        //"1209494526985078": "facades_prob_estimated_value",
         "1206280864223915": "deal_owner",
         "name": "dealname"  //dealname
         //descartades: region (national,international), país sense iso, constructor, distributor, installer, 
