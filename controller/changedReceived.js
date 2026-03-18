@@ -36,7 +36,9 @@ module.exports = async function (req, res, next) {
         //if(dealData?.events == undefined) throw new Error("dealData is empty");
 
         let { changes, changesUniqueFieldsGid, projectGid } = extractData(dealData);
-        if(changes.length == 0) throw new Error("no changes detected");
+        if(changes.length == 0) {
+            return res.status(200).json({message: "no changes detected"});
+        } 
 
         writeLogEntry("changes after "+JSON.stringify(changes));
         writeLogEntry("changesUniqueFieldsGid after "+JSON.stringify(changesUniqueFieldsGid));
