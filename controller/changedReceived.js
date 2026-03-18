@@ -235,7 +235,7 @@ function getAsanaChangedValues(asanaProjectData, changesUniqueFieldsGid) {
             else value = undefined;
         }
 
-        if (mapFieldToHubspot(custom_field.gid) == "deal_owner") {
+        if (mapFieldToHubspot(custom_field.gid) == "hubspot_owner_id") {
             if (value == "1206280864223916") value = "31053720" //jose
             else if (value == "1207021468306728") value = "29522313" //edu
             else value = undefined
