@@ -12,8 +12,9 @@ module.exports = async function (req, res) {
         let hsDealId = res.locals.outputObject.hsDealId;
         let url = `https://api.hubapi.com/crm/v3/objects/0-3/${hsDealId}`;
 
-        console.log("url ", url);
-        console.log("options ", res.locals.outputObject.changesToHubspot);
+        writeLogEntry("url " + url);
+        writeLogEntry("options " + JSON.stringify(res.locals.outputObject.changesToHubspot));
+        writeLogEntry("HUBSPOT_TOKEN " + HUBSPOT_TOKEN);
 
         //return res.status(200).json({ message: "test" });
         let response = await fetch(url, {
