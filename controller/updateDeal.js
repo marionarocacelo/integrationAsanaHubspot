@@ -39,7 +39,7 @@ module.exports = async function (req, res) {
         response = await response.json();
 
         writeLogEntry(`${res.locals.outputObject.project_gid} updateDeal.js url: (${url})`);
-        writeLogEntry(`${res.locals.outputObject.project_gid} updateDeal.js body: (${res.locals.outputObject.changesToHubspot})`);
+        writeLogEntry(`${res.locals.outputObject.project_gid} updateDeal.js body: (${JSON.stringify(res.locals.outputObject.changesToHubspot)})`);
         writeLogEntry(`${res.locals.outputObject.project_gid} updateDeal.js response: ${JSON.stringify(response)}`);
 
         console.log("response after ", response);
