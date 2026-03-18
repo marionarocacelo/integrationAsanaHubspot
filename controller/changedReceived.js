@@ -22,7 +22,10 @@ module.exports = async function (req, res, next) {
         };
 
         let dealData = req.body;
-        if(dealData?.events == undefined) throw new Error("dealData is empty");
+        if(dealData?.events == undefined) {
+            return res.status(200).json({message: "empty message"});
+        }
+        //if(dealData?.events == undefined) throw new Error("dealData is empty");
 
         let { changes, changesUniqueFieldsGid, projectGid } = extractData(dealData);
         if(changes.length == 0) throw new Error("no changes detected");
