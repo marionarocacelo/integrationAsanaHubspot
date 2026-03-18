@@ -23,15 +23,14 @@ module.exports = async function (req, res, next) {
 
         let dealData = req.body;
 
-        if(dealData?.events == undefined && (req.headers['x-hook-secret'] != undefined)) {
+        if(req.headers['x-hook-secret'] != undefined) res.set('X-Hook-Secret', hookSecret); 
 
-            const hookSecret = req.headers['x-hook-secret'];      
-            // per exemple, validar-lo
-            if (!hookSecret) {
-              return res.status(400).send('Missing X-Hook-Secret header');
+        if(dealData?.events == undefined) {
+            if(req.headers['x-hook-secret'] != undefined) {
+                return res.status(200).json({message: "handshaked!"});
+            } else {
+                return res.status(400).send('No data received or missing X-Hook-Secret header');
             }
-            res.set('X-Hook-Secret', hookSecret); 
-            return res.status(200).json({message: "handshaked!"});
         }
         //if(dealData?.events == undefined) throw new Error("dealData is empty");
 
