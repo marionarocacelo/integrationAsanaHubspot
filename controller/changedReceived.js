@@ -1,4 +1,5 @@
 const { writeLogEntry, writeLogEntryError, formatErrorWithLocation } = require("../utilities/logs");
+const { sendErrorNotification } = require("../utilities/email");
 
 const ASANA_TOKEN = process.env.ASANA_TOKEN;
 const HUBSPOT_TOKEN = process.env.HUBSPOT_TOKEN;
@@ -79,6 +80,11 @@ module.exports = async function (req, res, next) {
         writeLogEntryError(`changedReceived.js error: ${formatErrorWithLocation(error)}`, error, { reqBody: req.body });
         writeLogEntry(`ERROR! changedReceived.js error: ${formatErrorWithLocation(error)}`, error);
 
+        //SEND EMAIL TO ADMIN
+        await sendErrorNotification(
+            "IntegracioRailway: error in changedReceived middleware",
+            `${formatErrorWithLocation(error)}\n\nRequest body:\n${JSON.stringify(req.body)}`
+        );
         return res.status(500).json({
             message: `Internal server error: ${formatErrorWithLocation(error)}`,
             name: error.name,
