@@ -7,6 +7,9 @@ const HUBSPOT_TOKEN = process.env.HUBSPOT_TOKEN;
 
 module.exports = async function (req, res, next) {
     try {
+
+        return res.status(200).json({message: "all good!"});
+
         writeLogEntry("--------------------------------");
         writeLogEntry("input object: ",req.body);
 
