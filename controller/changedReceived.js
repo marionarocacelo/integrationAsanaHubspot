@@ -21,6 +21,11 @@ module.exports = async function (req, res, next) {
 
         let dealData = req.body;
 
+        if(dealData != undefined && dealData.events != undefined && dealData.events.length == 0) {
+            writeLogEntry("no events detected (RETURN 200)");
+            return res.status(200).json({message: "no events detected"});
+        }
+
         if(req.headers['x-hook-secret'] != undefined) res.set('X-Hook-Secret', req.headers['x-hook-secret']); 
 
         if(dealData?.events == undefined) {
@@ -86,7 +91,9 @@ function extractData(dealData) {
 
     let changesUniqueFieldsGid = [];
 
-    let changes = dealData.events.filter(event => {
+    const events = Array.isArray(dealData?.events) ? dealData.events : [];
+
+    let changes = events.filter(event => {
         if (event.action == 'changed' && event.resource?.resource_type == 'project' && event.change) {
             if (event.change.field == "name") {
                 return true;
@@ -118,19 +125,28 @@ function extractData(dealData) {
     let projectGid = changes[0]?.project_gid;
 
     if (projectGid == undefined) {
-        let events = dealData.events.filter(event => event.action == "added" && (event.resource?.resource_type == 'project' || event.parent.resource_type == 'project'));
-        if (events.length > 0) {
-            if (events[0].resource?.resource_type == 'project') {
-                projectGid = events[0].resource?.gid;
-            } else if (events[0].parent?.resource_type == 'project') {
-                projectGid = events[0].parent?.gid;
+        let addedEvents = events.filter(event => event.action == "added" && (event.resource?.resource_type == 'project' || event.parent.resource_type == 'project'));
+        if (addedEvents.length > 0) {
+            if (addedEvents[0].resource?.resource_type == 'project') {
+                projectGid = addedEvents[0].resource?.gid;
+            } else if (addedEvents[0].parent?.resource_type == 'project') {
+                projectGid = addedEvents[0].parent?.gid;
             }
         }
     }
 
-    if(changes.length == 0) {
-        throw new Error("no changes detected");
-    } else if (projectGid == undefined) {
+    // For webhook handshake / irrelevant events, it's valid to receive payloads
+    // without any matching "name/custom_fields" changes. In that case, return
+    // empty `changes` and let the middleware respond with HTTP 200.
+    if (changes.length == 0) {
+        return {
+            changes,
+            changesUniqueFieldsGid,
+            projectGid
+        };
+    }
+
+    if (projectGid == undefined) {
         throw new Error("no project gid found");
     }
 
