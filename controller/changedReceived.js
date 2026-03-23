@@ -235,6 +235,11 @@ function getAsanaChangedValues(asanaProjectData, changesUniqueFieldsGid) {
             value = custom_field.display_value;
         }
 
+        if (mapFieldToHubspot(custom_field.gid) == "facades_customer_type") {
+            writeLogEntry("-----> facades_customer_type custom field: " + JSON.stringify(custom_field));
+            writeLogEntry("-----> facades_customer_type value: " + JSON.stringify(value));
+        }
+
         if (mapFieldToHubspot(custom_field.gid) == "hs_priority") {
             if (value == "1206055807118475") value = "high";
             else if (value == "1206055807118476") value = "medium";
