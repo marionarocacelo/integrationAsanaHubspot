@@ -71,7 +71,6 @@ module.exports = async function (req, res, next) {
         next();
 
     } catch (error) {
-        console.error(error);
         writeLogEntryError(`changedReceived.js error: ${formatErrorWithLocation(error)}`, error, { reqBody: req.body });
         writeLogEntry(`ERROR! changedReceived.js error: ${formatErrorWithLocation(error)}`, error);
 
@@ -152,14 +151,7 @@ async function getAsanaProject(projectGid) {
             "Content-Type": "application/json"
         }
     });
-    console.log("asanaProjectResp ", asanaProjectResp);
-    writeLogEntry("url ", `https://app.asana.com/api/1.0/projects/${projectGid}`);
-    writeLogEntry("headers ", {
-        Authorization: `Bearer ${ASANA_TOKEN}`,
-        Accept: "application/json",
-        "Content-Type": "application/json"
-    });
-    writeLogEntry("asanaProjectResp ", asanaProjectResp);
+   
     if(asanaProjectResp.statusText == "Not Found") {
         throw new Error("Asana project not found");
     }
@@ -168,11 +160,7 @@ async function getAsanaProject(projectGid) {
 }
 
 function getHubspotDealId(projectData) {
-    console.log("projectData ", projectData);
-    writeLogEntry("projectData ", projectData);
     let hsDealId = projectData.data.custom_fields.find(field => field.gid == '1213203026130633');
-    console.log("hsDealId ", hsDealId);
-    writeLogEntry("hsDealId "+hsDealId)
     if (!hsDealId) {
         throw new Error("HS deal id not found");
     } else {
