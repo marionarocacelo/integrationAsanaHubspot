@@ -48,6 +48,12 @@ module.exports = {
 }
 
 function writeLogEntry(text, object) {
+
+    let output = "";
+    if(text) output += text;
+    if(object) output += JSON.stringify(object);
+    console.log(output);
+
     const logDir = path.dirname(LOG_FILE);
     if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
     const timestamp = new Date().toISOString();
@@ -116,6 +122,13 @@ function buildErrorEmailBody(timestamp, location, textWithLocation, fullStack, o
 }
 
 function writeLogEntryError(text, object, context) {
+
+    let output = "";
+    if(text) output += text;
+    if(object) output += JSON.stringify(object);
+    console.log(output);
+
+    
     const logDir = path.dirname(LOG_FILE_ERROR);
     if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
     const timestamp = new Date().toISOString();

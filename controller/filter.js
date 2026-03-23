@@ -10,11 +10,13 @@ module.exports = function (req, res, next) {
         let teamGid = res.locals.outputObject.team_gid; 
 
         if(teamGid != "1208390775021649") {
+            writeLogEntry(`INCORRECT TEAM GID: ${res.locals.outputObject.project_gid} (RETURN 403: Unauthorized)`);
             return res.status(403).json({ message: "Unauthorized" });
         } else if(res.locals.outputObject.numChanges == undefined || res.locals.outputObject.numChanges == 0) {
+            writeLogEntry(`NO CHANGE TO APPLY (RETURN 400: no change to apply)`);
             return res.status(400).json({ message: "no change to apply" });
         } else {
-            writeLogEntry(`${res.locals.outputObject.project_gid} passed filter`);
+            writeLogEntry(`FILTER MIDDLEWARE: ${res.locals.outputObject.project_gid}`);
             next();
         }
 

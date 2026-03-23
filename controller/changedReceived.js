@@ -8,17 +8,8 @@ const HUBSPOT_TOKEN = process.env.HUBSPOT_TOKEN;
 module.exports = async function (req, res, next) {
     try {
 
-        //DEBUG:
-        //if(req.headers['x-hook-secret'] != undefined) res.set('X-Hook-Secret', req.headers['x-hook-secret']); 
-        //return res.status(200).json({message: "all good!"});
-        //END DEBUG
-
-
         writeLogEntry("--------------------------------");
-        writeLogEntry("INPUT OBJECT FROM ASANA (FIRST BODY): ",req.body);
-
-        console.log("--------------------------------");
-        console.log("INPUT OBJECT FROM ASANA (FIRST BODY): ",req.body);
+        writeLogEntry("INPUT OBJECT (BODY): ", req.body);
 
         let outputObject = {
             project_gid: undefined,
@@ -30,41 +21,38 @@ module.exports = async function (req, res, next) {
 
         let dealData = req.body;
 
-        //if(req.headers['x-hook-secret'] != undefined) res.set('X-Hook-Secret', hookSecret); 
         if(req.headers['x-hook-secret'] != undefined) res.set('X-Hook-Secret', req.headers['x-hook-secret']); 
 
         if(dealData?.events == undefined) {
             if(req.headers['x-hook-secret'] != undefined) {
+                writeLogEntry("handshaked with secret (RETURN 200)");
                 return res.status(200).json({message: "handshaked!"});
             } else {
+                writeLogEntry("no data, missing X-Hook-Secret header (RETURN 400)");
                 return res.status(400).send('No data received or missing X-Hook-Secret header');
             }
         }
-        //if(dealData?.events == undefined) throw new Error("dealData is empty");
 
         let { changes, changesUniqueFieldsGid, projectGid } = extractData(dealData);
         if(changes.length == 0) {
+            writeLogEntry("no changes detected (RETURN 200)");
             return res.status(200).json({message: "no changes detected"});
         } 
 
-        writeLogEntry("changes after "+JSON.stringify(changes));
-        writeLogEntry("changesUniqueFieldsGid after "+JSON.stringify(changesUniqueFieldsGid));
-        writeLogEntry("projectGid after "+projectGid);
+        writeLogEntry("DETECTED CHANGES: "+JSON.stringify(changes));
+        writeLogEntry("CHANGES UNIQUE FIELDS GID: "+JSON.stringify(changesUniqueFieldsGid));
+        writeLogEntry("PROJECT GID: "+projectGid);
 
         outputObject.project_gid = projectGid;
 
         let projectData = await getAsanaProject(projectGid);
 
-        console.log("projectData after ", JSON.stringify(projectData));
-        writeLogEntry("projectData after ", projectData);
+        writeLogEntry("ASANA PROJECT: ", projectData);
         let hsDealId = getHubspotDealId(projectData);
         
-        console.log("hsDealId after ", hsDealId);
-        writeLogEntry("hsDealId after "+hsDealId);
-        console.log("projectData after ", projectData);
-        console.log("changesUniqueFieldsGid ", changesUniqueFieldsGid);
+        writeLogEntry("HS DEAL ID: "+hsDealId);
         let fieldsChanged = getAsanaChangedValues(projectData, changesUniqueFieldsGid);
-        writeLogEntry("fieldsChanged after "+JSON.stringify(fieldsChanged));
+        writeLogEntry("NEW VALUES TO CHANGE (VALUES FROM ASANA): "+JSON.stringify(fieldsChanged));
         let asanaProjectStatus = await getAsanaProjectStatus(projectGid);
         let hubspotProjectStatus = await getHubspotProjectStatus(hsDealId);
 
@@ -78,7 +66,7 @@ module.exports = async function (req, res, next) {
         res.locals.outputObject = outputObject;
         //return res.status(200).json({"message": "tot bé"});
 
-        writeLogEntry("changedReceived.js output object: ", outputObject);
+        writeLogEntry("OUTPUT FIRST MIDDLEWARE: ", outputObject);
 
         next();
 
@@ -233,11 +221,6 @@ function getAsanaChangedValues(asanaProjectData, changesUniqueFieldsGid) {
             value = custom_field.enum_value.gid;
         } else {
             value = custom_field.display_value;
-        }
-
-        if (mapFieldToHubspot(custom_field.gid) == "facades_customer_type") {
-            writeLogEntry("-----> facades_customer_type custom field: " + JSON.stringify(custom_field));
-            writeLogEntry("-----> facades_customer_type value: " + JSON.stringify(value));
         }
 
         if (mapFieldToHubspot(custom_field.gid) == "hs_priority") {
