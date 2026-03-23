@@ -154,7 +154,7 @@ function writeLogEntryError(text, object, context) {
         fs.appendFileSync(LOG_FILE_ERROR, `${timestamp}\tSTACK\t${stackOneLine}\n`);
     }
 
-    const emailBody = buildErrorEmailBody(timestamp, location, textWithLocation, fullStack, object, reqBody);
-    sendErrorNotification('ERROR INTEGRACIÓ ASANA HUBSPOT - RAILWAY', emailBody).catch(() => {});
+    //const emailBody = buildErrorEmailBody(timestamp, location, textWithLocation, fullStack, object, reqBody);
+    //sendErrorNotification('ERROR INTEGRACIÓ ASANA HUBSPOT - RAILWAY', emailBody).catch(() => {});
 }
 
