@@ -9,16 +9,16 @@ module.exports = async function (req, res, next) {
     try {
 
         //DEBUG:
-        if(req.headers['x-hook-secret'] != undefined) res.set('X-Hook-Secret', req.headers['x-hook-secret']); 
-        return res.status(200).json({message: "all good!"});
+        //if(req.headers['x-hook-secret'] != undefined) res.set('X-Hook-Secret', req.headers['x-hook-secret']); 
+        //return res.status(200).json({message: "all good!"});
         //END DEBUG
 
 
         writeLogEntry("--------------------------------");
-        writeLogEntry("input object: ",req.body);
+        writeLogEntry("INPUT OBJECT FROM ASANA (FIRST BODY): ",req.body);
 
         console.log("--------------------------------");
-        console.log("input object: ",req.body);
+        console.log("INPUT OBJECT FROM ASANA (FIRST BODY): ",req.body);
 
         let outputObject = {
             project_gid: undefined,
@@ -30,7 +30,8 @@ module.exports = async function (req, res, next) {
 
         let dealData = req.body;
 
-        if(req.headers['x-hook-secret'] != undefined) res.set('X-Hook-Secret', hookSecret); 
+        //if(req.headers['x-hook-secret'] != undefined) res.set('X-Hook-Secret', hookSecret); 
+        if(req.headers['x-hook-secret'] != undefined) res.set('X-Hook-Secret', req.headers['x-hook-secret']); 
 
         if(dealData?.events == undefined) {
             if(req.headers['x-hook-secret'] != undefined) {
