@@ -8,7 +8,11 @@ const HUBSPOT_TOKEN = process.env.HUBSPOT_TOKEN;
 module.exports = async function (req, res, next) {
     try {
 
+        //DEBUG:
+        if(req.headers['x-hook-secret'] != undefined) res.set('X-Hook-Secret', req.headers['x-hook-secret']); 
         return res.status(200).json({message: "all good!"});
+        //END DEBUG
+
 
         writeLogEntry("--------------------------------");
         writeLogEntry("input object: ",req.body);
