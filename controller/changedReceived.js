@@ -35,7 +35,7 @@ module.exports = async function (req, res, next) {
                 return res.status(200).json({message: "handshaked!"});
             } else {
                 writeLogEntry("no data, missing X-Hook-Secret header (RETURN 400)");
-                return res.status(400).send('No data received or missing X-Hook-Secret header');
+                return res.status(200).send('No data received or missing X-Hook-Secret header');
             }
         }
 

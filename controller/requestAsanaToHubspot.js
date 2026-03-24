@@ -59,7 +59,8 @@ module.exports.initCollection = async function (req, res) {
             created: existing.length === 0
         });
     } catch (error) {
-        return res.status(500).json({
+        writeLogEntryError(`requestAsanaToHubspot.js error: `, error, { reqBody: req.body });
+        return res.status(200).json({
             message: `Internal server error: ${error.message}`,
             name: error.name
         });
@@ -79,7 +80,7 @@ module.exports.insert = async function (req, res) {
         const requestResent = normalizeRequestResent(payload.request_resent);
 
         if (!asanaProjectGid || !hubspotDealId || !fieldGid || !fieldName || !fieldValue || status === undefined) {
-            return res.status(400).json({
+            return res.status(200).json({
                 message: "Missing required fields: asana_project_gid, hubspot_deal_id, field_GID, field_name, field_value, status"
             });
         }
@@ -99,14 +100,14 @@ module.exports.insert = async function (req, res) {
         };
 
         if (Number.isNaN(doc.date.getTime())) {
-            return res.status(400).json({ message: "date must be a valid date" });
+            return res.status(200).json({ message: "date must be a valid date" });
         }
 
         const result = await collection.insertOne(doc);
         const created = await collection.findOne({ _id: result.insertedId });
         return res.status(201).json(mapDocument(created));
     } catch (error) {
-        return res.status(500).json({
+        return res.status(200).json({
             message: `Internal server error: ${error.message}`,
             name: error.name
         });
@@ -117,7 +118,7 @@ module.exports.edit = async function (req, res) {
     try {
         const id = req.params.id;
         if (!ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid ID" });
+            return res.status(200).json({ message: "Invalid ID" });
         }
 
         const payload = req.body || {};
@@ -126,7 +127,7 @@ module.exports.edit = async function (req, res) {
         if (payload.date !== undefined) {
             const date = new Date(payload.date);
             if (Number.isNaN(date.getTime())) {
-                return res.status(400).json({ message: "date must be a valid date" });
+                return res.status(200).json({ message: "date must be a valid date" });
             }
             update.date = date;
         }
@@ -147,11 +148,11 @@ module.exports.edit = async function (req, res) {
         ].some((key) => payload[key] !== undefined && !update[key]);
 
         if (hasInvalidString) {
-            return res.status(400).json({ message: "Updated string fields cannot be empty" });
+            return res.status(200).json({ message: "Updated string fields cannot be empty" });
         }
 
         if (Object.keys(update).length === 0) {
-            return res.status(400).json({ message: "No fields provided to update" });
+            return res.status(200).json({ message: "No fields provided to update" });
         }
 
         const db = await getDb();
@@ -164,13 +165,13 @@ module.exports.edit = async function (req, res) {
         );
 
         if (result.matchedCount === 0) {
-            return res.status(404).json({ message: "Register not found" });
+            return res.status(200).json({ message: "Register not found" });
         }
 
         const updated = await collection.findOne({ _id: objectId });
         return res.status(200).json(mapDocument(updated));
     } catch (error) {
-        return res.status(500).json({
+        return res.status(200).json({
             message: `Internal server error: ${error.message}`,
             name: error.name
         });
