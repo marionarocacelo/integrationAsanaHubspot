@@ -79,7 +79,12 @@ module.exports = async function (req, res, next) {
         writeLogEntryError(`changedReceived.js error: ${formatErrorWithLocation(error)}`, error, { reqBody: req.body });
         writeLogEntry(`ERROR! changedReceived.js error: ${formatErrorWithLocation(error)}`, error);
 
-        return res.status(500).json({
+        //SEND EMAIL TO ADMIN
+        await sendErrorNotification(
+            "IntegracioRailway: error in changedReceived middleware",
+            `${formatErrorWithLocation(error)}\n\nRequest body:\n${JSON.stringify(req.body)}`
+        );
+        return res.status(200).json({
             message: `Internal server error: ${formatErrorWithLocation(error)}`,
             name: error.name,
             stack: error.stack
