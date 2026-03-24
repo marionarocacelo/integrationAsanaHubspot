@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { sendErrorNotification } = require('./email');
+//const { sendErrorNotification } = require('./email');
 
 const LOG_FILE = path.join(__dirname, '../logs/', 'logs', 'access.log');
 const LOG_FILE_ERROR = path.join(__dirname, '../logs/', 'logs', 'error.log');

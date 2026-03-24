@@ -1,3 +1,4 @@
+const { sendErrorNotification } = require("../utilities/email");
 const { writeLogEntry, writeLogEntryError, formatErrorWithLocation } = require("../utilities/logs");
 
 const ASANA_TOKEN = process.env.ASANA_TOKEN;
