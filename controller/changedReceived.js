@@ -20,16 +20,16 @@ module.exports = async function (req, res, next) {
             changesToHubspot: {properties: {}}
         };
 
-        let dealData = req.body;
+        let inputData = req.body;
 
-        if(dealData != undefined && dealData.events != undefined && dealData.events.length == 0) {
+        if(inputData != undefined && inputData.events != undefined && inputData.events.length == 0) {
             writeLogEntry("no events detected (RETURN 200)");
             return res.status(200).json({message: "no events detected"});
         }
 
         if(req.headers['x-hook-secret'] != undefined) res.set('X-Hook-Secret', req.headers['x-hook-secret']); 
 
-        if(dealData?.events == undefined) {
+        if(inputData?.events == undefined) {
             if(req.headers['x-hook-secret'] != undefined) {
                 writeLogEntry("handshaked with secret (RETURN 200)");
                 return res.status(200).json({message: "handshaked!"});
@@ -39,8 +39,12 @@ module.exports = async function (req, res, next) {
             }
         }
 
-        let { changes, changesUniqueFieldsGid, projectGid } = extractData(dealData);
+        let { changes, changesUniqueFieldsGid, projectGid } = extractData(inputData);
         
+        console.log("changes: ", changes);
+        console.log("changesUniqueFieldsGid: ", changesUniqueFieldsGid);
+        console.log("projectGid: ", projectGid);
+
         /*
         //Comentem aquest bloc perquè sinó no tenim en compte que podriem estar rebent canvis de technical status
         if(changes.length == 0) {
@@ -59,14 +63,16 @@ module.exports = async function (req, res, next) {
 
         writeLogEntry("ASANA PROJECT: ", projectData);
         let hsDealId = getHubspotDealId(projectData);
-        
+
         writeLogEntry("HS DEAL ID: "+hsDealId);
         let fieldsChanged = getAsanaChangedValues(projectData, changesUniqueFieldsGid);
+
         writeLogEntry("NEW VALUES TO CHANGE (VALUES FROM ASANA): "+JSON.stringify(fieldsChanged));
         let asanaProjectStatus = await getAsanaProjectStatus(projectGid);
         let hubspotProjectStatus = await getHubspotProjectStatus(hsDealId);
 
         let objectHSFields = getHSFieldsObject(asanaProjectStatus, hubspotProjectStatus, fieldsChanged);
+
         //PREPARE OUTPUT OBJECT:
         outputObject.team_gid = projectData.data.team.gid;
         outputObject.numChanges = Object.keys(objectHSFields).length;
@@ -97,11 +103,13 @@ module.exports = async function (req, res, next) {
     }
 }
 
-function extractData(dealData) {
+function extractData(inputData) {
 
     let changesUniqueFieldsGid = [];
 
-    const events = Array.isArray(dealData?.events) ? dealData.events : [];
+    const events = Array.isArray(inputData?.events) ? inputData.events : [];
+
+    console.log("EVENTS!!!!: ", events);
 
     let changes = events.filter(event => {
         if (event.action == 'changed' && event.resource?.resource_type == 'project' && event.change) {
@@ -142,8 +150,18 @@ function extractData(dealData) {
             } else if (addedEvents[0].parent?.resource_type == 'project') {
                 projectGid = addedEvents[0].parent?.gid;
             }
+        } 
+    }
+    
+    if (projectGid == undefined && events.length > 0) {
+        //si projectGid segueix sent indefinit però tenim events, el busquem en algun altre lloc
+        let eventsWithResource = events.filter(event => event.resource != undefined && event.resource.resource_type == 'project');
+        if(eventsWithResource.length > 0) {
+            projectGid = eventsWithResource[0].resource?.gid;
         }
     }
+
+
 
     // For webhook handshake / irrelevant events, it's valid to receive payloads
     // without any matching "name/custom_fields" changes. In that case, return
@@ -157,7 +175,7 @@ function extractData(dealData) {
     }
 
     if (projectGid == undefined) {
-        throw new Error("no project gid found");
+        console.log("no project gid found");
     }
 
     return {
@@ -182,13 +200,20 @@ async function getAsanaProject(projectGid) {
         throw new Error("Asana project not found");
     }
 
-    return await asanaProjectResp.json();
+    let asanaProjectData = await asanaProjectResp.json();
+    if(asanaProjectData?.errors) {
+        console.log("getAsanaProject error: "+JSON.stringify(asanaProjectData.errors));
+        asanaProjectData = undefined;
+    }
+
+    return asanaProjectData;
 }
 
 function getHubspotDealId(projectData) {
     let hsDealId = projectData?.data?.custom_fields?.find(field => field.gid == '1213203026130633');
     if (!hsDealId) {
-        throw new Error("HS deal id not found");
+        console.log("getHubspotDealId error: HS deal id not found");
+        return undefined;
     } else {
         return hsDealId.number_value;
     }
@@ -229,33 +254,36 @@ function mapFieldToHubspot(asanaField) {
 }
 
 function getAsanaChangedValues(asanaProjectData, changesUniqueFieldsGid) {
-    let fieldsChanged = asanaProjectData.data.custom_fields.filter(custom_field => changesUniqueFieldsGid.includes(custom_field.gid)).map(custom_field => {
-        let value;
-        if (custom_field.type == "enum") {
-            value = custom_field.enum_value.gid;
-        } else {
-            value = custom_field.display_value;
-        }
-
-        if (mapFieldToHubspot(custom_field.gid) == "hs_priority") {
-            if (value == "1206055807118475") value = "high";
-            else if (value == "1206055807118476") value = "medium";
-            else if (value == "1206055807118477") value = "low";
-            else value = undefined;
-        }
-
-        if (mapFieldToHubspot(custom_field.gid) == "deal_owner") {
-            if (value == "1206280864223916") value = "31053720"; //jose
-            else if (value == "1207021468306728") value = "29522313"; //edu
-            else value = undefined;
-        }
-
-        return {
-            value,
-            field_gid: custom_field.gid,
-            field_hubspot_name: mapFieldToHubspot(custom_field.gid),
-        }
-    });
+    let fieldsChanged = [];
+    if(asanaProjectData != undefined && changesUniqueFieldsGid != undefined) {
+        fieldsChanged = asanaProjectData.data.custom_fields.filter(custom_field => changesUniqueFieldsGid.includes(custom_field.gid)).map(custom_field => {
+            let value;
+            if (custom_field.type == "enum") {
+                value = custom_field.enum_value.gid;
+            } else {
+                value = custom_field.display_value;
+            }
+    
+            if (mapFieldToHubspot(custom_field.gid) == "hs_priority") {
+                if (value == "1206055807118475") value = "high";
+                else if (value == "1206055807118476") value = "medium";
+                else if (value == "1206055807118477") value = "low";
+                else value = undefined;
+            }
+    
+            if (mapFieldToHubspot(custom_field.gid) == "deal_owner") {
+                if (value == "1206280864223916") value = "31053720"; //jose
+                else if (value == "1207021468306728") value = "29522313"; //edu
+                else value = undefined;
+            }
+    
+            return {
+                value,
+                field_gid: custom_field.gid,
+                field_hubspot_name: mapFieldToHubspot(custom_field.gid),
+            }
+        });
+    }
 
     //check changes in name
     if (changesUniqueFieldsGid.includes("name")) {
@@ -265,9 +293,7 @@ function getAsanaChangedValues(asanaProjectData, changesUniqueFieldsGid) {
             field_hubspot_name: mapFieldToHubspot("name"),
         });
     }
-    if(fieldsChanged.length == 0) {
-        throw new Error("no fields changed");
-    }
+    
     return fieldsChanged;
 }
 
