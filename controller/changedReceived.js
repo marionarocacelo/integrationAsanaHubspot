@@ -39,10 +39,14 @@ module.exports = async function (req, res, next) {
         }
 
         let { changes, changesUniqueFieldsGid, projectGid } = extractData(dealData);
+        
+        /*
+        //Comentem aquest bloc perquè sinó no tenim en compte que podriem estar rebent canvis de technical status
         if(changes.length == 0) {
             writeLogEntry("no changes detected (RETURN 200)");
             return res.status(200).json({message: "no changes detected"});
         } 
+        */
 
         writeLogEntry("DETECTED CHANGES: "+JSON.stringify(changes));
         writeLogEntry("CHANGES UNIQUE FIELDS GID: "+JSON.stringify(changesUniqueFieldsGid));
