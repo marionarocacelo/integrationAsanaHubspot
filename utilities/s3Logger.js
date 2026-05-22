@@ -5,6 +5,7 @@ const { S3Client, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/clien
 const { NodeHttpHandler } = require('@smithy/node-http-handler');
 
 const BUCKET   = process.env.BUCKET;
+const BUCKET_ROOT = (process.env.BUCKET_ROOT || 'logs').replace(/\/+$/, ''); // strip trailing slash
 const REGION   = process.env.REGION || 'auto';
 
 // Normalise endpoint — ensure it has a scheme so the SDK can build a valid URL
@@ -34,7 +35,7 @@ function todayKey() {
 
 /** S3 object key for a given log type and date */
 function s3Key(type, date) {
-  return `logs/${date}/${type}.log`;
+  return `${BUCKET_ROOT}/logs/${date}/${type}.log`;
 }
 
 /** Convert a ReadableStream / AsyncIterable to a UTF-8 string */
@@ -123,6 +124,7 @@ process.on('SIGINT',  shutdown);
 module.exports = {
   s3,
   BUCKET,
+  BUCKET_ROOT,
   streamToString,
   /** Append a line to the access log buffer (called by morgan stream) */
   appendAccessLog(line) {
