@@ -17,6 +17,7 @@ const s3Logger = require('../utilities/s3Logger');
 const { writeLogEntryError } = require('../utilities/logs');
 
 const BUCKET = process.env.BUCKET;
+const BUCKET_ROOT = s3Logger.BUCKET_ROOT;
 const TODAY  = new Date().toISOString().slice(0, 10);
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -26,7 +27,7 @@ function fail(label, reason) { console.error(`  ✘  ${label}\n     ${reason}`);
 function section(title) { console.log(`\n── ${title} ─────────────────────────────`); }
 
 async function readS3Log(type) {
-  const key = `logs/${TODAY}/${type}.log`;
+  const key = `${BUCKET_ROOT}/logs/${TODAY}/${type}.log`;
   const res = await s3Logger.s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
   return await s3Logger.streamToString(res.Body);
 }

@@ -5,7 +5,7 @@ const { S3Client, GetObjectCommand, PutObjectCommand } = require('@aws-sdk/clien
 const { NodeHttpHandler } = require('@smithy/node-http-handler');
 
 const BUCKET   = process.env.BUCKET;
-const BUCKET_ROOT = (process.env.BUCKET_ROOT || 'logs').replace(/\/+$/, ''); // strip trailing slash
+const BUCKET_ROOT = (process.env.BUCKET_ROOT || 'logs').trim().replace(/\/+$/, ''); // strip whitespace and trailing slash
 const REGION   = process.env.REGION || 'auto';
 
 // Normalise endpoint — ensure it has a scheme so the SDK can build a valid URL
