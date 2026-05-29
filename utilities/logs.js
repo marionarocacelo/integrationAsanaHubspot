@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const s3Logger = require('./s3Logger');
 //const { sendErrorNotification } = require('./email');
 
 const LOG_FILE = path.join(__dirname, '../logs/', 'logs', 'access.log');
@@ -151,8 +152,26 @@ function writeLogEntryError(text, object, context) {
     const fullStack = object && getErrorStack(object);
     if (fullStack) {
         const stackOneLine = fullStack.replace(/\n/g, ' | ');
-        fs.appendFileSync(LOG_FILE_ERROR, `${timestamp}\tSTACK\t${stackOneLine}\n`);
+        const stackLine = `${timestamp}\tSTACK\t${stackOneLine}\n`;
+        fs.appendFileSync(LOG_FILE_ERROR, stackLine);
     }
+
+    // S3 — single NDJSON line (one object per error, stack included)
+    const ndjson = {
+        timestamp,
+        level: 'error',
+        message: textWithLocation,
+        location: location || undefined,
+        reqBody: reqBody !== undefined ? reqBody : undefined,
+        error: object
+            ? {
+                name:    object.name    || undefined,
+                message: object.message || undefined,
+                stack:   fullStack      || undefined,
+              }
+            : undefined,
+    };
+    s3Logger.appendErrorLog(JSON.stringify(ndjson) + '\n');
 
     //const emailBody = buildErrorEmailBody(timestamp, location, textWithLocation, fullStack, object, reqBody);
     //sendErrorNotification('ERROR INTEGRACIÓ ASANA HUBSPOT - RAILWAY', emailBody).catch(() => {});
